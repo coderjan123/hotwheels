@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infinite Conway's Game of Life</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f0f0f0;
+      padding: 20px;
+      overflow: hidden;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .description {
+      max-width: 600px;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #666;
+    }
+    #game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    #grid-container {
+      position: relative;
+      overflow: hidden;
+      width: 600px;
+      height: 400px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      cursor: grab;
+    }
+    #grid {
+      position: absolute;
+      transform-origin: 0 0;
+    }
+    .cell {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: #333;
+      border: 1px solid #f0f0f0;
+      box-sizing: border-box;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #3e8e41;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    #speed-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    #speed {
+      width: 100px;
+    }
+    .presets {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .stats {
+      margin-top: 10px;
+      color: #666;
+      text-align: center;
+    }
+    .zoom-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .instructions {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #666;
+      max-width: 600px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Infinite Conway's Game of Life</h1>
+  <div class="description">
+    Click to add cells, drag to move around, zoom in/out to explore the infinite grid!
+  </div>
+  <div id="game-container">
+    <div class="presets">
+      <button id="preset-glider">Glider</button>
+      <button id="preset-pulsar">Pulsar</button>
+      <button id="preset-gosper">Gosper Glider Gun</button>
+      <button id="preset-random">Random</button>
+      <button id="clear">Clear</button>
+    </div>
+    <div class="zoom-controls">
+      <button id="zoom-in">Zoom In (+)</button>
+      <button id="zoom-out">Zoom Out (-)</button>
+      <button id="reset-view">Reset View</button>
+    </div>
+    <div id="grid-container">
+      <div id="grid"></div>
+    </div>
+    <div class="controls">
+      <button id="start">Start</button>
+      <button id="step">Step</button>
+      <button id="stop" disabled>Stop</button>
+    </div>
+    <div id="speed-control">
+      <label for="speed">Speed:</label>
+      <input type="range" id="speed" min="50" max="500" step="50" value="200">
+      <span id="speed-value">200ms</span>
+    </div>
+    <div class="stats">
+      Generation: <span id="generation">0</span> | Population: <span id="population">0</span> | 
+      Visible Area: <span id="visible-area">(-15,-10) to (15,10)</span>
+    </div>
+  </div>
+  <div class="instructions">
+    <p>Drag to pan around the infinite grid. Use zoom buttons to explore further out. The grid will automatically expand as life reaches the edges!</p>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Grid and rendering variables
+      let activeCells = new Set(); // Set of "x,y" strings for active cells
+      let cellSize = 20;
+      let scale = 1;
+      let offsetX = 0;
+      let offsetY = 0;
+      let isDragging = false;
+      let lastMouseX = 0;
+      let lastMouseY = 0;
+      let generation = 0;
+      let intervalId = null;
+      let speed = 200;
+      
+      // DOM elements
+      const gridContainer = document.getElementById('grid-container');
+      const gridElement = document.getElementById('grid');
+      const startButton = document.getElementById('start');
+      const stopButton = document.getElementById('stop');
+      const stepButton = document.getElementById('step');
+      const clearButton = document.getElementById('clear');
+      const speedSlider = document.getElementById('speed');
+      const speedValue = document.getElementById('speed-value');
+      const generationCounter = document.getElementById('generation');
+      const populationCounter = document.getElementById('population');
+      const visibleAreaDisplay = document.getElementById('visible-area');
+      const zoomInButton = document.getElementById('zoom-in');
+      const zoomOutButton = document.getElementById('zoom-out');
+      const resetViewButton = document.getElementById('reset-view');
+      const gliderButton = document.getElementById('preset-glider');
+      const pulsarButton = document.getElementById('preset-pulsar');
+      const gosperButton = document.getElementById('preset-gosper');
+      const randomButton = document.getElementById('preset-random');
+      
+      // Convert between screen and grid coordinates
+      function screenToGrid(screenX, screenY) {
+        const rect = gridContainer.getBoundingClientRect();
+        const x = Math.floor((screenX - rect.left - offsetX) / (cellSize * scale));
+        const y = Math.floor((screenY - rect.top - offsetY) / (cellSize * scale));
+        return { x, y };
+      }
+      
+      // Add a cell to the active set
+      function addCell(x, y) {
+        const key = `${x},${y}`;
+        if (!activeCells.has(key)) {
+          activeCells.add(key);
+          
+          // Create and position the cell element
+          const cell = document.createElement('div');
+          cell.classList.add('cell');
+          cell.dataset.x = x;
+          cell.dataset.y = y;
+          cell.style.left = (x * cellSize) + 'px';
+          cell.style.top = (y * cellSize) + 'px';
+          gridElement.appendChild(cell);
+        }
+      }
+      
+      // Remove a cell from the active set
+      function removeCell(x, y) {
+        const key = `${x},${y}`;
+        if (activeCells.has(key)) {
+          activeCells.delete(key);
+          const cell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+          if (cell) {
+            cell.remove();
+          }
+        }
+      }
+      
+      // Toggle a cell's state
+      function toggleCell(x, y) {
+        const key = `${x},${y}`;
+        if (activeCells.has(key)) {
+          removeCell(x, y);
+        } else {
+          addCell(x, y);
+        }
+        updateStatistics();
+      }
+      
+      // Clear all cells
+      function clearGrid() {
+        stopSimulation();
+        activeCells.clear();
+        gridElement.innerHTML = '';
+        generation = 0;
+        generationCounter.textContent = generation;
+        updateStatistics();
+      }
+      
+      // Calculate the next generation using Conway's Game of Life rules
+      function nextGeneration() {
+        const neighborCounts = new Map();
+        const newActiveCells = new Set();
+        
+        // Count neighbors for all cells adjacent to active cells
+        for (const cellKey of activeCells) {
+          const [x, y] = cellKey.split(',').map(Number);
+          
+          // Count neighbors for this cell
+          let neighborCount = 0;
+          
+          // Check all 8 neighbors and count active ones
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              if (dx === 0 && dy === 0) continue;
+              
+              const nx = x + dx;
+              const ny = y + dy;
+              const neighborKey = `${nx},${ny}`;
+              
+              // Count if neighbor is active
+              if (activeCells.has(neighborKey)) {
+                neighborCount++;
+              }
+              
+              // Record this cell as a potential future cell
+              const neighborCountKey = neighborKey;
+              neighborCounts.set(neighborCountKey, (neighborCounts.get(neighborCountKey) || 0) + 1);
+            }
+          }
+          
+          // Apply rule 1: Any live cell with 2 or 3 live neighbors survives
+          if (neighborCount === 2 || neighborCount === 3) {
+            newActiveCells.add(cellKey);
+          }
+        }
+        
+        // Apply rule 2: Any dead cell with exactly 3 live neighbors becomes alive
+        for (const [cellKey, count] of neighborCounts.entries()) {
+          if (count === 3 && !activeCells.has(cellKey)) {
+            newActiveCells.add(cellKey);
+          }
+        }
+        
+        // Update the grid with new state
+        const cellsToRemove = [...activeCells].filter(cell => !newActiveCells.has(cell));
+        const cellsToAdd = [...newActiveCells].filter(cell => !activeCells.has(cell));
+        
+        for (const cellKey of cellsToRemove) {
+          const [x, y] = cellKey.split(',').map(Number);
+          removeCell(x, y);
+        }
+        
+        for (const cellKey of cellsToAdd) {
+          const [x, y] = cellKey.split(',').map(Number);
+          addCell(x, y);
+        }
+        
+        activeCells = newActiveCells;
+        generation++;
+        generationCounter.textContent = generation;
+        updateStatistics();
+      }
+      
+      // Start simulation
+      function startSimulation() {
+        if (intervalId) return;
+        
+        intervalId = setInterval(nextGeneration, speed);
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        stepButton.disabled = true;
+      }
+      
+      // Stop simulation
+      function stopSimulation() {
+        if (!intervalId) return;
+        
+        clearInterval(intervalId);
+        intervalId = null;
+        startButton.disabled = false;
+        stopButton.disabled = true;
+        stepButton.disabled = false;
+      }
+      
+      // Update statistics and visible area display
+      function updateStatistics() {
+        populationCounter.textContent = activeCells.size;
+        
+        // Calculate visible area coordinates
+        const containerRect = gridContainer.getBoundingClientRect();
+        const minVisible = screenToGrid(containerRect.left, containerRect.top);
+        const maxVisible = screenToGrid(containerRect.right, containerRect.bottom);
+        
+        visibleAreaDisplay.textContent = `(${minVisible.x},${minVisible.y}) to (${maxVisible.x},${maxVisible.y})`;
+      }
+      
+      // Update grid transform
+      function updateGridTransform() {
+        gridElement.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+        updateStatistics();
+      }
+      
+      // Zoom in
+      function zoomIn() {
+        if (scale < 3) {
+          scale *= 1.2;
+          updateGridTransform();
+        }
+      }
+      
+      // Zoom out
+      function zoomOut() {
+        if (scale > 0.3) {
+          scale /= 1.2;
+          updateGridTransform();
+        }
+      }
+      
+      // Reset view
+      function resetView() {
+        scale = 1;
+        offsetX = 0;
+        offsetY = 0;
+        updateGridTransform();
+      }
+      
+      // Create glider pattern
+      function createGlider() {
+        clearGrid();
+        const pattern = [
+          [1, 0],
+          [2, 1],
+          [0, 2],
+          [1, 2],
+          [2, 2]
+        ];
+        
+        pattern.forEach(([dx, dy]) => {
+          addCell(dx, dy);
+        });
+        
+        updateStatistics();
+      }
+      
+      // Create pulsar pattern
+      function createPulsar() {
+        clearGrid();
+        
+        // Pulsar pattern (period 3 oscillator)
+        const coords = [
+          // Top section
+          [2, 0], [3, 0], [4, 0], [8, 0], [9, 0], [10, 0],
+          [0, 2], [5, 2], [7, 2], [12, 2],
+          [0, 3], [5, 3], [7, 3], [12, 3],
+          [0, 4], [5, 4], [7, 4], [12, 4],
+          [2, 5], [3, 5], [4, 5], [8, 5], [9, 5], [10, 5],
+          
+          // Bottom section
+          [2, 7], [3, 7], [4, 7], [8, 7], [9, 7], [10, 7],
+          [0, 8], [5, 8], [7, 8], [12, 8],
+          [0, 9], [5, 9], [7, 9], [12, 9],
+          [0, 10], [5, 10], [7, 10], [12, 10],
+          [2, 12], [3, 12], [4, 12], [8, 12], [9, 12], [10, 12]
+        ];
+        
+        coords.forEach(([x, y]) => {
+          addCell(x - 6, y - 6); // Center the pattern
+        });
+        
+        updateStatistics();
+      }
+      
+      // Create Gosper Glider Gun pattern
+      function createGosperGliderGun() {
+        clearGrid();
+        
+        const pattern = [
+          [0, 4], [0, 5], [1, 4], [1, 5], // Block
+          [10, 4], [10, 5], [10, 6], [11, 3], [11, 7], [12, 2], [12, 8], [13, 2], [13, 8], [14, 5], [15, 3], [15, 7], [16, 4], [16, 5], [16, 6], [17, 5], // Left gun
+          [20, 2], [20, 3], [20, 4], [21, 2], [21, 3], [21, 4], [22, 1], [22, 5], [24, 0], [24, 1], [24, 5], [24, 6], // Right gun
+          [34, 2], [34, 3], [35, 2], [35, 3] // Block
+        ];
+        
+        pattern.forEach(([x, y]) => {
+          addCell(x - 15, y - 10); // Position it better in view
+        });
+        
+        updateStatistics();
+      }
+      
+      // Create random pattern
+      function createRandom() {
+        clearGrid();
+        
+        const width = 30;
+        const height = 20;
+        const offsetX = -Math.floor(width / 2);
+        const offsetY = -Math.floor(height / 2);
+        
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            if (Math.random() > 0.7) {
+              addCell(x + offsetX, y + offsetY);
+            }
+          }
+        }
+        
+        updateStatistics();
+      }
+      
+      // Initialize grid with default center position
+      function initializeGrid() {
+        offsetX = gridContainer.clientWidth / 2;
+        offsetY = gridContainer.clientHeight / 2;
+        updateGridTransform();
+      }
+      
+      // Click handler for grid container
+      gridContainer.addEventListener('mousedown', function(event) {
+        if (event.button === 0) { // Left click
+          // If not dragging, toggle cell
+          const gridCoords = screenToGrid(event.clientX, event.clientY);
+          toggleCell(gridCoords.x, gridCoords.y);
+          
+          // Start drag
+          isDragging = true;
+          lastMouseX = event.clientX;
+          lastMouseY = event.clientY;
+          gridContainer.style.cursor = 'grabbing';
+          
+          // Prevent default behavior to avoid text selection during drag
+          event.preventDefault();
+        }
+      });
+      
+      // Mouse move handler
+      document.addEventListener('mousemove', function(event) {
+        if (isDragging) {
+          // Calculate how much the mouse has moved
+          const deltaX = event.clientX - lastMouseX;
+          const deltaY = event.clientY - lastMouseY;
+          
+          // Update the last position
+          lastMouseX = event.clientX;
+          lastMouseY = event.clientY;
+          
+          // Move the grid by changing the offset
+          offsetX += deltaX;
+          offsetY += deltaY;
+          
+          // Apply the new transformation
+          updateGridTransform();
+        }
+      });
+      
+      // Mouse up handler
+      document.addEventListener('mouseup', function() {
+        isDragging = false;
+        gridContainer.style.cursor = 'grab';
+      });
+      
+      // Prevent context menu on grid container
+      gridContainer.addEventListener('contextmenu', function(event) {
+        event.preventDefault();
+      });
+      
+      // Event listeners for buttons and controls
+      startButton.addEventListener('click', startSimulation);
+      stopButton.addEventListener('click', stopSimulation);
+      stepButton.addEventListener('click', nextGeneration);
+      clearButton.addEventListener('click', clearGrid);
+      zoomInButton.addEventListener('click', zoomIn);
+      zoomOutButton.addEventListener('click', zoomOut);
+      resetViewButton.addEventListener('click', resetView);
+      gliderButton.addEventListener('click', createGlider);
+      pulsarButton.addEventListener('click', createPulsar);
+      gosperButton.addEventListener('click', createGosperGliderGun);
+      randomButton.addEventListener('click', createRandom);
+      
+      // Speed slider event listener
+      speedSlider.addEventListener('input', function() {
+        speed = parseInt(this.value);
+        speedValue.textContent = speed + 'ms';
+        
+        if (intervalId) {
+          stopSimulation();
+          startSimulation();
+        }
+      });
+      
+      // Optional: Add mouse wheel zooming
+      gridContainer.addEventListener('wheel', function(event) {
+        event.preventDefault();
+        
+        if (event.deltaY < 0) {
+          zoomIn();
+        } else {
+          zoomOut();
+        }
+      });
+      
+      // Initialize the grid
+      initializeGrid();
+    });
+  </script>
+</body>
+</html>
