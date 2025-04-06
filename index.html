@@ -3,31 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meine Website</title>
+    <title>Document</title>
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <h1>Hallo Welt</h1>
-    <p>Dies ist die Website von Jan Holtwessels.</p>
+    
+   
+    
+   
 
-    <!-- Mehr Abstand zwischen den Abschnitten -->
-    <div style="height: 50px;"></div>
 
-    <p>Meine Hobbys:</p>
-    <!-- Liste sauber als <ul> strukturieren -->
-    <ul>
-        <li>Schach spielen</li>
-        <li>Mit Linux rumfummeln</li>
-        <li>Programmieren (z. B. diese Website)</li>
-    </ul>
-    <p>Distro ranking:</p>
-    <ol>
-        <li><a href="https://bit.ly/3BlS71b" target="_blank">MX Linux</a></li>
-        <li>Arch(btw.)</li>
-        <li>Endeavour os</li>
-        <li>Linux Mint</li>
-        <li>Kali Linux</li>
-    </ol>
-    <a href="infinite-game-of-life.html">Play Game of Life</a>
+<div class ="Container_Upgrades">
+    <div class="Upgrades">
+        <div class="boxcontainer">
+            <div class="box" id="1">1x</div>
+            <div class="box" id="10">10x</div>
+            <div class="box" id="100">100x</div>
 
+        </div>
+
+        <button id="Fabrikkaufen" class="Fabrikkaufen Upgrade_Button" >Kaufe 1x fabrik für 100 cookies</button>
+        <button id="Upgrade" class="Upgrade Upgrade_Button">Upgrade Mouse</button>
+    </div>
+    <div class="Upgrades">
+        <img src="cookie.png" alt="" id="cookie" style="height: 160px; width: 160px; border-radius: 100%;">
+        <div class="STATS">
+            <p>Cookie Counter:</p>
+            <p id="cookie-count">0</p>
+            <p>Fabriken :</p>
+            <p id="Fabrikencount"> 0</p>    
+            <p id="Final_cookie_counter"></p>
+        </div>
+    </div>
+</div>
+<script src="script.js"></script>
 </body>
 </html>
