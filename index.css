@@ -41,18 +41,20 @@ html, body {
 }
 
   .Upgrades {
+    margin-top: 40px;
     height: 400px;
     width:500px;
-    border-radius: 200px;
-    background: linear-gradient(to bottom, #1C2627, #1c2127);
+  
+   /* background: linear-gradient(to bottom, #1C2627, #1c2127);*/
     display: flex;
     align-items: center;
     padding-top: 100px;
     flex-direction: column;
+    background-color: rgb(21, 27, 29)
 }
 
 .Upgrade_Button {
-    height: 80px;
+    height: 40px;
     width: 280px;
     text-align: center;
     display: flex;
@@ -60,6 +62,16 @@ html, body {
     justify-content: center;
     background-color: #273638;
     color: #75F6D8;
+    border: #192224 2px solid;
+    
+}
+.Upgrade_Button:hover {
+  background-color: #3e575a;
+  
+}
+.box:hover {
+  background-color: #3e575a;
+  
 }
 .Container_Upgrades {
   margin-top: 16px;
@@ -95,5 +107,9 @@ html, body {
 
 .box.active {
   background-color: #75F6D8;
-  color: #141A1C;
+  color: #141a1c;
+}
+.box.active.box:hover {
+  background-color: #7cffe0;
+  color: #101818;
 }
