@@ -8,11 +8,19 @@
 </head>
 <body>
 
-
+<div class="Kreiscontainer">
+    <img src="image.png" alt="" id="multiverse" class="multiverse_img">
+    
+    <img src="cookie.png" alt="" id="cookie" class="cookie_img">
+    
+    <img src="image.png" alt="" id="multiverse2" class="multiverse_img">
+</div>>
 
 <div class ="Container_Upgrades">
+    
     <div class="Upgrades" id="Upgrades">
-        <div class="boxcontainer">
+        <div id="Upgrade_button_container" class="Upgrade_button_container"></div>
+        <div class="boxcontainer" id="boxcontainer">
             <div class="box" id="1">1x</div>
             <div class="box" id="10">10x</div>
             <div class="box" id="100">100x</div>
@@ -20,16 +28,22 @@
         </div>
         <!-- <button id="Upgrade" class="Upgrade Upgrade_Button">Upgrade Mouse</button> -->
     </div>
+    
     <div class="Upgrades">
-        <img src="cookie.png" alt="" id="cookie" style="height: 160px; width: 160px; border-radius: 100%;">
-        <div class="STATS">
-            <p>Cookie Counter:</p>
-            <p id="cookie-count">0</p>
-            <p>Fabriken :</p>
-            <p id="Fabrikencount"> 0</p>    
-            <p id="Final_cookie_counter"></p>
-            <p id="Oma_count">0</p>
-            <p id="Cursor_count"></p>
+        
+        <div class="STATS" id="STATS">
+            <table border="0" id="table" class="table" >
+                <tr>
+                    <td class="table_content">Cookie Counter:</td>
+                    <td id="cookie-count" class="table_content">0</td>
+                </tr>
+                <tr >
+                    <td class="table_content">Name</td>
+                    <td class="table_content">Anzahl</td>
+                </tr>
+                
+
+            </table>
         </div>
     </div>
 </div>

@@ -25,6 +25,8 @@ let current_fabriken_price = 0;
 class Upgrade {
     constructor(name, price,price_growth, cookies_per_second,menge,id ,mengen_zähler_id, preiszähler , current_price){
     const upgradeContainer = document.getElementById("Upgrades");
+    const boxcontainer = document.getElementById("boxcontainer");
+    table = document.getElementById("table");
     this.name = name;
     this.price = price;
     this.price_growth = price_growth;
@@ -34,9 +36,23 @@ class Upgrade {
     this.current_price = current_price;
     this.mengen_zähler_id = mengen_zähler_id;
     this.menge = menge;
+
+
+
+
     this.button = this.createButton();
-    upgradeContainer.appendChild(this.button);
+
+    this.tabellen_zeile = document.createElement("tr");
+    this.tabellen_zeile.id = this.id + "_row";
+    table.appendChild(this.tabellen_zeile);
+
+    this.name_für_tabelle = this.name_für_tabelle();
+    this.objekt_zähler = this.createobjekt_zähler();
+    document.getElementById("Upgrade_button_container").appendChild(this.button);
+    this.tabellen_zeile.appendChild(this.name_für_tabelle);
+    this.tabellen_zeile.appendChild(this.objekt_zähler);
     }
+
 
 
     createButton() {
@@ -49,7 +65,24 @@ class Upgrade {
         
         return btn;
       }
+    createobjekt_zähler() {
+        const counter = document.createElement("td");
+        counter.innerText = this.menge;
+        counter.className = "table_content";
 
+        counter.id = this.mengen_zähler_id;
+
+        return counter;
+      }
+      name_für_tabelle() {
+        const name_für_tabelle = document.createElement("td");
+        name_für_tabelle.innerText = this.name;
+        name_für_tabelle.className = "table_content";
+        name_für_tabelle.id = this.mengen_zähler_id + "_name";
+        return name_für_tabelle;
+
+        return counter;
+      }
    
       PriceUpdate() {    
         this.preiszähler = 0;
