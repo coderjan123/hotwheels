@@ -93,6 +93,20 @@ html, body {
     border: #192224 2px solid;
     
 }
+
+.Upgrade_Button:disabled {
+  
+  height: 58%;
+  width: 80%;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #11181a;
+  color: #6adfc3;
+  border: #141b1d 2px solid;
+  
+}
 .Upgrade_Button:hover {
   background-color: #3e575a;
   

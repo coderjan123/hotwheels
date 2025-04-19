@@ -7,6 +7,8 @@ let buy_multiplier = 1;
 let temporärer_Fabrikenpreis = 0;
 let fabrikenpreiszähler = 0;
 let current_fabriken_price = 0;
+let unlocked_mutliverse = false;
+let multiplier = 1;
 
 
 
@@ -14,7 +16,9 @@ let current_fabriken_price = 0;
 
 
 
-
+function getRandomFloat(min, max) {
+  return parseFloat((Math.random() * (max - min) + min).toFixed(1));
+}
 
 
 
@@ -38,6 +42,17 @@ class Upgrade {
     this.menge = menge;
 
 
+    this.name_backup = name;
+    this.price_backup = price;
+    this.price_growth_backup = price_growth;
+    this.cookies_per_second_backup = cookies_per_second;
+    this.id_backup = id;
+    this.preiszähler_backup = price;
+    this.current_price_backup = current_price;
+    this.mengen_zähler_id_backup = mengen_zähler_id;
+    this.menge_backup = menge;
+
+
 
 
     this.button = this.createButton();
@@ -57,12 +72,13 @@ class Upgrade {
 
     createButton() {
         const btn = document.createElement("button");
-        btn.innerText = "Kaufe "+ buy_multiplier +"x "+ this.name +" für " + Math.round(this.price) + " cookies"
+        btn.innerText = "Kaufe "+ buy_multiplier +"x "+ " ??? "+" für " + Math.round(this.price) + " cookies"
         btn.className = "Upgrade_Button";
         btn.id = this.id;
     
         btn.addEventListener("click", () => this.Buying());
         
+        btn.disabled = true;
         return btn;
       }
     createobjekt_zähler() {
@@ -83,7 +99,22 @@ class Upgrade {
 
         return counter;
       }
-   
+      reset_it_all() {
+        console.log("Resetting all upgrades");
+        this.name = this.name_backup;
+        this.price = this.price_backup;
+        this.price_growth = this.price_growth_backup;
+        this.cookies_per_second = this.cookies_per_second_backup;
+        this.id = this.id_backup;
+        this.preiszähler = this.preiszähler_backup;
+        this.current_price = this.current_price_backup;
+        this.mengen_zähler_id = this.mengen_zähler_id_backup;
+        this.menge = this.menge_backup;
+        const button = document.getElementById(this.id);
+        button.innerText = "Kaufe "+ buy_multiplier +"x "+ this.name +" für " + Math.round(this.price) + " cookies";
+       
+        document.getElementById(this.mengen_zähler_id).innerText = this.menge;
+      }
       PriceUpdate() {    
         this.preiszähler = 0;
         this.current_price = this.price; // Reset to base price
@@ -197,11 +228,20 @@ boxes.forEach(box => {
 
 
 function EarnCookies(Cookie_ammount) {
-    cookies += Cookie_ammount;
-    document.getElementById('cookie-count').innerText = cookies;
-    Cookiecounter += Cookie_ammount;
+    if (Cookie_ammount < 0) {
+      cookies += Cookie_ammount;
+    } else {
+      cookies += Math.round(Cookie_ammount * multiplier);
+    }
+      document.getElementById('cookie-count').innerText = cookies;
+      Cookiecounter += Cookie_ammount;
+      if (Cookiecounter > 10000 && !unlocked_mutliverse) {
+        Update_multiverse();
+      }
     
-};
+}
+    
+   
 document.getElementById('cookie').onclick = function() {
     playClickSound();
     EarnCookies(cursor.menge + 1);
@@ -216,9 +256,41 @@ function cookies_passiv() {
         EarnCookies(10);
     }
 }
+function Update_multiverse() {
+  console.log("Multiverse unlocked");
+  unlocked_mutliverse = true;
+  const img = document.getElementById("multiverse");
+  if (img.src.includes("image.png")) {
+    img.src = "image2.png";
+  };
+  
 
 
+}
+let multiverse_btn = document.getElementById("multiverse");
+multiverse_btn.addEventListener("click", () => {
+  if (unlocked_mutliverse == true) {
+    Do_multiversething();
+  }
+});
 
+function Do_multiversething() {
+  document.getElementById("cookie-count").innerText = 0; 
+  oma.reset_it_all();
+  fabrik.reset_it_all();
+  cursor.reset_it_all();
+  fabrik.menge = 0;
+  cursor.menge = 0;
+  cookies = 0;
+  multiplier += getRandomFloat(0.2, 2);
+  document.getElementById("Multiplier").innerText = multiplier;
+  unlocked_mutliverse = false;
+  const img = document.getElementById("multiverse");
+  if (img.src.includes("image2.png")) {
+    img.src = "image.png";
+  };
+
+}
 // Starte den Intervall-Timer
 setInterval(cookies_passiv, 5000);
 
