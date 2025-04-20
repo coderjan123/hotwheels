@@ -27,7 +27,7 @@ function getRandomFloat(min, max) {
 
 
 class Upgrade {
-    constructor(name, price,price_growth, cookies_per_second,menge,id ,mengen_zähler_id, preiszähler , current_price){
+    constructor(name, price,price_growth, cookies_per_second,menge,id ,mengen_zähler_id, preiszähler , current_price , enabled_price){
     const upgradeContainer = document.getElementById("Upgrades");
     const boxcontainer = document.getElementById("boxcontainer");
     table = document.getElementById("table");
@@ -40,6 +40,8 @@ class Upgrade {
     this.current_price = current_price;
     this.mengen_zähler_id = mengen_zähler_id;
     this.menge = menge;
+    this.enabled = false;
+    this.enabled_price = enabled_price;
 
 
     this.name_backup = name;
@@ -132,8 +134,11 @@ class Upgrade {
         }
     
         // Update the button text to reflect the new price
+        if (this.enabled == true) {
+          console.log("Enabled");
         document.getElementById(this.id).innerText = 
             "Kaufe " + buy_multiplier + "x " + this.name + " für " + Math.round(this.preiszähler) + " cookies";
+        }
     }
     Buying(){
     playClickSound();
@@ -147,7 +152,13 @@ class Upgrade {
 
     }
   }
-
+Check_If_Enabled() {
+  if (cookies >= this.enabled_price) {
+  this.enabled = true;
+  this.button.disabled = false;
+  document.getElementById(this.id).innerText = 
+  "Kaufe " + buy_multiplier + "x " + this.name + " für " + Math.round(this.preiszähler) + " cookies";
+}}
 
 
 
@@ -163,9 +174,9 @@ class Upgrade {
 
 
 }
-const cursor = new Upgrade("Cursor", 1,1.4,0,0,"Cursorkaufen","Cursor_count",0,15);
-const oma = new Upgrade("Oma",10,1.2,10,0,"Omakaufen","Oma_count",0,5);
-const fabrik = new Upgrade("Fabrik",100,1.2,50,0,"Fabrikkaufen","Fabrikencount",0,100);
+const cursor = new Upgrade("Cursor", 1,1.4,0,0,"Cursorkaufen","Cursor_count",0,15,5);
+const oma = new Upgrade("Oma",10,1.2,10,0,"Omakaufen","Oma_count",0,5,20);
+const fabrik = new Upgrade("Fabrik",100,1.2,50,0,"Fabrikkaufen","Fabrikencount",0,100,100);
 
 
 
@@ -238,7 +249,14 @@ function EarnCookies(Cookie_ammount) {
       if (Cookiecounter > 10000 && !unlocked_mutliverse) {
         Update_multiverse();
       }
+      Check_If_Enabled();
     
+}
+function Check_If_Enabled() {
+  oma.Check_If_Enabled();
+  fabrik.Check_If_Enabled();
+  cursor.Check_If_Enabled();
+
 }
     
    
