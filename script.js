@@ -7,7 +7,7 @@ let buy_multiplier = 1;
 let temporärer_Fabrikenpreis = 0;
 let fabrikenpreiszähler = 0;
 let current_fabriken_price = 0;
-let unlocked_mutliverse = false;
+let unlocked_multiverse = false;
 let multiplier = 1;
 
 
@@ -30,7 +30,7 @@ class Upgrade {
     constructor(name, price,price_growth, cookies_per_second,menge,id ,mengen_zähler_id, preiszähler , current_price , enabled_price){
     const upgradeContainer = document.getElementById("Upgrades");
     const boxcontainer = document.getElementById("boxcontainer");
-    table = document.getElementById("table");
+   
     this.name = name;
     this.price = price;
     this.price_growth = price_growth;
@@ -53,21 +53,13 @@ class Upgrade {
     this.current_price_backup = current_price;
     this.mengen_zähler_id_backup = mengen_zähler_id;
     this.menge_backup = menge;
-
+    this.name_zelle = this.name_für_tabelle();
 
 
 
     this.button = this.createButton();
-
-    this.tabellen_zeile = document.createElement("tr");
-    this.tabellen_zeile.id = this.id + "_row";
-    table.appendChild(this.tabellen_zeile);
-
-    this.name_für_tabelle = this.name_für_tabelle();
-    this.objekt_zähler = this.createobjekt_zähler();
     document.getElementById("Upgrade_button_container").appendChild(this.button);
-    this.tabellen_zeile.appendChild(this.name_für_tabelle);
-    this.tabellen_zeile.appendChild(this.objekt_zähler);
+    
     }
 
 
@@ -99,7 +91,7 @@ class Upgrade {
         name_für_tabelle.id = this.mengen_zähler_id + "_name";
         return name_für_tabelle;
 
-        return counter;
+       
       }
       reset_it_all() {
         console.log("Resetting all upgrades");
@@ -153,11 +145,23 @@ class Upgrade {
     }
   }
 Check_If_Enabled() {
-  if (cookies >= this.enabled_price) {
+  if (cookies >= this.enabled_price && this.enabled == false) {
   this.enabled = true;
   this.button.disabled = false;
   document.getElementById(this.id).innerText = 
   "Kaufe " + buy_multiplier + "x " + this.name + " für " + Math.round(this.preiszähler) + " cookies";
+  table = document.getElementById("table");
+  this.tabellen_zeile = document.createElement("tr");
+  this.tabellen_zeile.id = this.id + "_row";
+  this.tabellen_zeile.className = "inner_Table";
+
+  table.appendChild(this.tabellen_zeile);
+    
+  //this.name_für_tabelle = name_zelle;
+    this.objekt_zähler = this.createobjekt_zähler();
+    
+    this.tabellen_zeile.appendChild(this.name_zelle);
+    this.tabellen_zeile.appendChild(this.objekt_zähler);
 }}
 
 
@@ -246,8 +250,8 @@ function EarnCookies(Cookie_ammount) {
     }
       document.getElementById('cookie-count').innerText = cookies;
       Cookiecounter += Cookie_ammount;
-      if (Cookiecounter > 10000 && !unlocked_mutliverse) {
-        Update_multiverse();
+      if (Cookiecounter > 10000 && !unlocked_multiverse && Cookiecounter != 0) {
+       Update_multiverse();
       }
       Check_If_Enabled();
     
@@ -276,7 +280,7 @@ function cookies_passiv() {
 }
 function Update_multiverse() {
   console.log("Multiverse unlocked");
-  unlocked_mutliverse = true;
+  unlocked_multiverse = true;
   const img = document.getElementById("multiverse");
   if (img.src.includes("image.png")) {
     img.src = "image2.png";
@@ -287,7 +291,7 @@ function Update_multiverse() {
 }
 let multiverse_btn = document.getElementById("multiverse");
 multiverse_btn.addEventListener("click", () => {
-  if (unlocked_mutliverse == true) {
+  if (unlocked_multiverse == true) {
     Do_multiversething();
   }
 });
@@ -300,9 +304,10 @@ function Do_multiversething() {
   fabrik.menge = 0;
   cursor.menge = 0;
   cookies = 0;
+  Cookiecounter = 0;
   multiplier += getRandomFloat(0.2, 2);
   document.getElementById("Multiplier").innerText = multiplier;
-  unlocked_mutliverse = false;
+  unlocked_multiverse = false;
   const img = document.getElementById("multiverse");
   if (img.src.includes("image2.png")) {
     img.src = "image.png";

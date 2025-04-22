@@ -22,6 +22,7 @@ html, body {
 
     
   }
+.inner_Table{height: 4vh;}
 .table_content{
   background-color: #273638;
   border: #192224 2px solid;
@@ -40,12 +41,14 @@ html, body {
     color: #75F6D8;
     gap: 4px;
     
+    
 
 }
 .table{
   margin-top: 0vh;
   width: 20vw;
-  height: 20vh;
+  height: auto;
+  
   
 }
 .STATS > p {
